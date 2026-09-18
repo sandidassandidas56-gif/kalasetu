@@ -9,8 +9,8 @@ export const metadata: Metadata = {
   description: "Discover one-of-a-kind Indian handicrafts made by the hands that carry generations of craft forward.",
   generator: 'v0.app',
   icons: {
-    icon: '/kalasetu-logo.png',
-    apple: '/kalasetu-logo.png',
+    icon: '/kalasetu.png',
+    apple: '/kalasetu.png',
   },
 }
 

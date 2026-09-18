@@ -15,25 +15,10 @@ export default function manifest(): MetadataRoute.Manifest {
     scope: '/',
     icons: [
       {
-        src: '/kalasetu-logo.png',
+        src: '/kalasetu.png',
         sizes: '1024x1024',
         type: 'image/png',
         purpose: 'any maskable',
-      },
-      {
-        src: '/icon-light-32x32.png',
-        sizes: '32x32',
-        type: 'image/png',
-      },
-      {
-        src: '/icon-dark-32x32.png',
-        sizes: '32x32',
-        type: 'image/png',
-      },
-      {
-        src: '/apple-icon.png',
-        sizes: '180x180',
-        type: 'image/png',
       },
     ],
   }
