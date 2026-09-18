@@ -9,21 +9,8 @@ export const metadata: Metadata = {
   description: "Discover one-of-a-kind Indian handicrafts made by the hands that carry generations of craft forward.",
   generator: 'v0.app',
   icons: {
-    icon: [
-      {
-        url: '/icon-light-32x32.png',
-        media: '(prefers-color-scheme: light)',
-      },
-      {
-        url: '/icon-dark-32x32.png',
-        media: '(prefers-color-scheme: dark)',
-      },
-      {
-        url: '/icon.svg',
-        type: 'image/svg+xml',
-      },
-    ],
-    apple: '/apple-icon.png',
+    icon: '/kalasetu-logo.png',
+    apple: '/kalasetu-logo.png',
   },
 }
 

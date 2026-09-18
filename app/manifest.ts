@@ -15,9 +15,9 @@ export default function manifest(): MetadataRoute.Manifest {
     scope: '/',
     icons: [
       {
-        src: '/icon.svg',
-        sizes: 'any',
-        type: 'image/svg+xml',
+        src: '/kalasetu-logo.png',
+        sizes: '1024x1024',
+        type: 'image/png',
         purpose: 'any maskable',
       },
       {
