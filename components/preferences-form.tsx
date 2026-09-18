@@ -1,0 +1,5 @@
+import { savePreferences } from '@/app/actions/preferences'
+
+export function PreferencesForm({ values }: { values?: Record<string, unknown> | null }) {
+  return <form action={savePreferences} className="mt-5 space-y-3"><label className="flex items-center justify-between rounded-2xl bg-[#f7f5ef] p-4 text-sm"><span>Order updates</span><input name="orderUpdates" type="checkbox" defaultChecked={values?.orderUpdates !== false} className="size-4 accent-[#d9704b]" /></label><label className="flex items-center justify-between rounded-2xl bg-[#f7f5ef] p-4 text-sm"><span>Inquiry updates</span><input name="inquiryUpdates" type="checkbox" defaultChecked={values?.inquiryUpdates !== false} className="size-4 accent-[#d9704b]" /></label><label className="flex items-center justify-between rounded-2xl bg-[#f7f5ef] p-4 text-sm"><span>Occasional KalaSetu notes</span><input name="marketingUpdates" type="checkbox" defaultChecked={values?.marketingUpdates === true} className="size-4 accent-[#d9704b]" /></label><button className="mt-2 rounded-full bg-[#20342b] px-5 py-3 text-sm font-semibold text-white">Save preferences</button></form>
+}

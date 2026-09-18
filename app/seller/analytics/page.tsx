@@ -1,0 +1,5 @@
+import Link from 'next/link'
+
+export default function SellerAnalyticsPage() {
+  return <main className="min-h-screen bg-[#f7f5ef] px-5 py-10 text-[#20342b] sm:px-8 lg:px-12"><div className="mx-auto max-w-5xl"><Link href="/seller" className="text-sm font-semibold text-[#d9704b]">← Back to seller studio</Link><p className="mt-10 text-xs font-bold uppercase tracking-[.2em] text-[#d9704b]">Seller analytics</p><h1 className="mt-2 font-serif text-5xl">Know what is resonating.</h1><p className="mt-3 max-w-xl text-[#65756c]">Views, saves, inquiries, and orders will appear here once your catalog is published and buyers interact with it.</p><section className="mt-10 grid gap-4 sm:grid-cols-3">{['Product views','Saves','Inquiry conversion'].map(label => <div key={label} className="rounded-3xl border border-dashed border-[#cfc7b9] bg-white p-6"><p className="text-sm text-[#65756c]">{label}</p><p className="mt-5 font-serif text-4xl">—</p><p className="mt-2 text-xs text-[#89948d]">Awaiting live activity</p></div>)}</section></div></main>
+}
