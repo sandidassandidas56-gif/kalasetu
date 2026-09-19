@@ -21,7 +21,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
   }
 
   await ensureMarketplaceSchema()
-  const result = await db.execute(sql`SELECT p.id, p.name, p.description, p.category, p.price, p."imageUrl", p.state, p.availability, p."sellerId", COALESCE(sp."shopName", u.name) AS seller_name FROM products p LEFT JOIN seller_profiles sp ON sp."userId" = p."sellerId" LEFT JOIN "user" u ON u.id = p."sellerId" WHERE p.id = ${id} AND p.published = true LIMIT 1`)
+  const result = await db.execute(sql`SELECT p.id, p.name, p.description, p.category, p.price, CASE WHEN p."imageUrl" LIKE 'blob:%' THEN '' ELSE p."imageUrl" END AS "imageUrl", p.state, p.availability, p."sellerId", COALESCE(sp."shopName", u.name) AS seller_name FROM products p LEFT JOIN seller_profiles sp ON sp."userId" = p."sellerId" LEFT JOIN "user" u ON u.id = p."sellerId" WHERE p.id = ${id} AND p.published = true LIMIT 1`)
   const product = (result as unknown as { rows?: Record<string, unknown>[] }).rows?.[0]
   if (!product) return <main className="min-h-screen bg-[#f7f3ec] p-8"><Link href="/buyer">Back to marketplace</Link><h1 className="mt-12 font-serif text-4xl">Product not found.</h1><p className="mt-3 text-[#68766d]">This product is unpublished, unavailable, or no longer exists.</p></main>
   const reviewsResult = await db.execute(sql`SELECT r.rating, r.body, r."createdAt", u.name AS buyer_name FROM reviews r LEFT JOIN "user" u ON u.id = r."buyerId" WHERE r."productId" = ${id} ORDER BY r."createdAt" DESC LIMIT 20`)
