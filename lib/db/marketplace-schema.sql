@@ -83,6 +83,8 @@ CREATE TABLE IF NOT EXISTS inquiries (
   subject text NOT NULL,
   message text NOT NULL,
   status text NOT NULL DEFAULT 'new',
+  "sellerResponse" text NOT NULL DEFAULT '',
+  "respondedAt" timestamptz,
   "createdAt" timestamptz NOT NULL DEFAULT now(),
   "updatedAt" timestamptz NOT NULL DEFAULT now()
 );

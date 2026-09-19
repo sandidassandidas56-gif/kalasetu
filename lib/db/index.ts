@@ -81,7 +81,7 @@ export function ensureMarketplaceSchema() {
       message text NOT NULL,
       status text NOT NULL DEFAULT 'new',
       "createdAt" timestamptz NOT NULL DEFAULT now(), "updatedAt" timestamptz NOT NULL DEFAULT now()
-    )`)).then(() => db.execute(sql`CREATE TABLE IF NOT EXISTS notifications (
+    )`)).then(() => db.execute(sql`ALTER TABLE inquiries ADD COLUMN IF NOT EXISTS "sellerResponse" text NOT NULL DEFAULT ''`)).then(() => db.execute(sql`ALTER TABLE inquiries ADD COLUMN IF NOT EXISTS "respondedAt" timestamptz`)).then(() => db.execute(sql`CREATE TABLE IF NOT EXISTS notifications (
       id text PRIMARY KEY,
       "userId" text NOT NULL REFERENCES "user"(id) ON DELETE CASCADE,
       title text NOT NULL,

@@ -224,6 +224,14 @@ export default function SellerPage() {
       router.push('/seller/ai-studio')
       return
     }
+    if (item === 'Buyer Inquiries') {
+      router.push('/seller/inquiries')
+      return
+    }
+    if (item === 'Orders') {
+      router.push('/seller/orders')
+      return
+    }
     setActive(item)
     setMobileOpen(false)
   }
