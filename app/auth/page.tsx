@@ -7,13 +7,18 @@ import { authClient } from '@/lib/auth-client'
 function AuthContent() {
   const searchParams = useSearchParams()
   const [mode, setMode] = useState<'signin' | 'signup'>('signin')
-  const [message, setMessage] = useState(searchParams.get('error') === 'session-expired' ? 'Your session expired. Please sign in again.' : '')
+  const initialError = searchParams.get('error')
+  const [message, setMessage] = useState(initialError === 'session-expired'
+    ? 'Your session expired. Please sign in again.'
+    : initialError === 'oauth-failed' || initialError === 'state_mismatch'
+      ? 'Google sign-in expired or was opened in another tab. Start Google sign-in again.'
+      : '')
   const [pending, setPending] = useState(false)
 
   async function continueWithGoogle() {
     setPending(true)
     setMessage('')
-    const result = await authClient.signIn.social({ provider: 'google', callbackURL: '/auth/complete' })
+    const result = await authClient.signIn.social({ provider: 'google', callbackURL: '/auth/complete', errorCallbackURL: '/auth?error=oauth-failed' })
     if (result.error) {
       setPending(false)
       setMessage(result.error.message || 'Google sign-in was cancelled or could not be completed. Please try again.')
