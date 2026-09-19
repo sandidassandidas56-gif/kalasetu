@@ -2,7 +2,7 @@
 
 import { Suspense, useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { getAccountRole, setAccountPassword, setAccountRole } from '@/app/actions/profile'
+import { setAccountPassword, setAccountRole } from '@/app/actions/profile'
 import { useAuth, type AccountRole } from '@/components/auth-provider'
 
 function AuthCompleteContent() {
@@ -32,13 +32,10 @@ function AuthCompleteContent() {
     }
     setSaving(true)
     setMessage('Creating your secure KalaSetu account...')
-    try {
-      await setAccountRole(selectedRole)
-      const persistedRole = await getAccountRole()
-      if (persistedRole !== selectedRole) throw new Error('The selected KalaSetu role was not persisted.')
-    } catch (error) {
+    const roleResult = await setAccountRole(selectedRole)
+    if (!roleResult.ok) {
       setSaving(false)
-      setMessage(error instanceof Error ? error.message : 'The KalaSetu role could not be saved.')
+      setMessage(roleResult.message)
       return
     }
     try {
