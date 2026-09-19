@@ -153,11 +153,11 @@ export default function SellerPage() {
               <h2 className="mt-2 font-serif text-4xl">Performance insights</h2>
             </div>
             <div className="grid gap-4 md:grid-cols-3">
-              {['Visits', 'Save rate', 'Inquiry conversion'].map((metric, idx) => (
-                <div key={metric} className="rounded-[1.75rem] border border-[#e4ded2] bg-white p-5">
-                  <p className="text-sm text-[#65756c]">{metric}</p>
-                  <p className="mt-5 font-serif text-4xl">{idx === 0 ? '2.4k' : idx === 1 ? '27%' : '14%'}</p>
-                  <p className="mt-2 text-xs text-[#65756c]">{idx === 0 ? '+18% vs last week' : idx === 1 ? 'Up 4 points' : 'Healthy buyer intent'}</p>
+              {[{ label: 'Catalog items', value: dashboard.summary.totalProducts }, { label: 'Published items', value: dashboard.summary.published }, { label: 'Buyer inquiries', value: dashboard.summary.inquiries }].map((metric) => (
+                <div key={metric.label} className="rounded-[1.75rem] border border-[#e4ded2] bg-white p-5">
+                  <p className="text-sm text-[#65756c]">{metric.label}</p>
+                  <p className="mt-5 font-serif text-4xl">{metric.value}</p>
+                  <p className="mt-2 text-xs text-[#65756c]">Live from your account</p>
                 </div>
               ))}
             </div>
@@ -190,15 +190,9 @@ export default function SellerPage() {
                     <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#d9704b]">Seller pulse</p>
                     <h3 className="mt-2 font-serif text-3xl">Your shop is growing</h3>
                   </div>
-                  <span className="rounded-full bg-[#eef4ed] px-3 py-1 text-xs font-bold text-[#20342b]">+12.6%</span>
+                  <span className="rounded-full bg-[#eef4ed] px-3 py-1 text-xs font-bold text-[#20342b]">{dashboard.summary.published} live</span>
                 </div>
-                <div className="mt-6 h-44 rounded-[1.5rem] bg-gradient-to-r from-[#f3e4d8] via-[#f6f3ee] to-[#eaf3eb] p-4">
-                  <div className="flex h-full items-end gap-3">
-                    {[34, 48, 39, 65, 57, 80, 92].map((height, index) => (
-                      <div key={height + index} className="flex-1 rounded-t-2xl bg-[#d9704b]/80" style={{ height: `${height}%` }} />
-                    ))}
-                  </div>
-                </div>
+                <div className="mt-6 rounded-[1.5rem] bg-[#f7f5ef] p-6 text-sm leading-6 text-[#65756c]">Live sales charts will appear after buyer views, orders, and inquiries are recorded. No estimated activity is shown here.</div>
               </div>
 
               <div className="rounded-[2rem] border border-[#e4ded2] bg-white p-6">

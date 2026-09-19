@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { sql } from 'drizzle-orm'
 import { getCurrentSession } from '@/lib/auth'
-import { db, hasDatabaseConnection } from '@/lib/db'
+import { db, ensureMarketplaceSchema, hasDatabaseConnection } from '@/lib/db'
 
 const emptyDashboard = {
   summary: { totalProducts: 0, published: 0, pendingOrders: 0, completedOrders: 0, revenue: 0, inquiries: 0 },
@@ -17,6 +17,7 @@ export async function GET() {
     const role = (session?.user as { role?: string } | undefined)?.role
     if (!session?.user || role !== 'seller') return NextResponse.json({ error: 'Seller access required' }, { status: 401 })
     if (!hasDatabaseConnection()) return NextResponse.json(emptyDashboard)
+    await ensureMarketplaceSchema()
 
     const sellerId = session.user.id
     const summaryResult = await db.execute(sql`
