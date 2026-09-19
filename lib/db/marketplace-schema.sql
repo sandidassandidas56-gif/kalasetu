@@ -59,6 +59,7 @@ CREATE TABLE IF NOT EXISTS marketplace_orders (
   total numeric NOT NULL DEFAULT 0,
   "shippingAddress" text NOT NULL DEFAULT '',
   "paymentStatus" text NOT NULL DEFAULT 'pending_payment',
+  "paymentMethod" text NOT NULL DEFAULT 'order_request',
   "orderStatus" text NOT NULL DEFAULT 'pending_payment',
   "createdAt" timestamptz NOT NULL DEFAULT now(),
   "updatedAt" timestamptz NOT NULL DEFAULT now()

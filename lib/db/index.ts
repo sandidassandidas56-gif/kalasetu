@@ -64,7 +64,7 @@ export function ensureMarketplaceSchema() {
       "paymentStatus" text NOT NULL DEFAULT 'pending_payment',
       "orderStatus" text NOT NULL DEFAULT 'pending_payment',
       "createdAt" timestamptz NOT NULL DEFAULT now(), "updatedAt" timestamptz NOT NULL DEFAULT now()
-    )`)).then(() => db.execute(sql`CREATE TABLE IF NOT EXISTS marketplace_order_items (
+    )`)).then(() => db.execute(sql`ALTER TABLE marketplace_orders ADD COLUMN IF NOT EXISTS "paymentMethod" text NOT NULL DEFAULT 'order_request'`)).then(() => db.execute(sql`CREATE TABLE IF NOT EXISTS marketplace_order_items (
       id text PRIMARY KEY,
       "orderId" text NOT NULL REFERENCES marketplace_orders(id) ON DELETE CASCADE,
       "productId" text NOT NULL REFERENCES products(id) ON DELETE CASCADE,

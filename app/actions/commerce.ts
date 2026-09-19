@@ -55,7 +55,7 @@ export async function getBuyerCart() {
   return ((result as unknown as { rows?: Record<string, unknown>[] }).rows ?? []).map(row => ({ id: String(row.id), quantity: Number(row.quantity), product_id: String(row.product_id), name: String(row.name), price: Number(row.price), imageUrl: row.imageUrl ? String(row.imageUrl) : undefined, availability: String(row.availability), seller_name: row.seller_name ? String(row.seller_name) : undefined })) as BuyerCartRow[]
 }
 
-export async function createCheckoutOrder(address: string) {
+export async function createCheckoutOrder(address: string, paymentMethod: 'cash_on_delivery' | 'order_request' = 'cash_on_delivery') {
   const buyerId = await getBuyerId()
   if (!address.trim()) throw new Error('Shipping address is required')
   if (!hasDatabaseConnection()) {
@@ -64,21 +64,22 @@ export async function createCheckoutOrder(address: string) {
     revalidatePath('/buyer/cart')
     revalidatePath('/buyer/orders')
     revalidatePath('/seller')
-    return { id: order.id, paymentStatus: 'unavailable' as const, total: order.total }
+    return { id: order.id, paymentStatus: paymentMethod === 'cash_on_delivery' ? 'cod_pending' as const : 'unavailable' as const, total: order.total }
   }
   const cart = await getBuyerCart()
   const available = cart.filter(item => item.availability === 'available')
   if (!available.length) throw new Error('Your cart is empty or contains unavailable products')
   const subtotal = available.reduce((sum, item) => sum + item.price * item.quantity, 0)
   const orderId = crypto.randomUUID()
-  await db.execute(sql`INSERT INTO marketplace_orders (id, "buyerId", subtotal, shipping, total, "shippingAddress", "paymentStatus", "orderStatus") VALUES (${orderId}, ${buyerId}, ${subtotal}, 0, ${subtotal}, ${address.trim()}, 'unavailable', 'pending_payment')`)
+  const paymentStatus = paymentMethod === 'cash_on_delivery' ? 'cod_pending' : 'unavailable'
+  await db.execute(sql`INSERT INTO marketplace_orders (id, "buyerId", subtotal, shipping, total, "shippingAddress", "paymentStatus", "paymentMethod", "orderStatus") VALUES (${orderId}, ${buyerId}, ${subtotal}, 0, ${subtotal}, ${address.trim()}, ${paymentStatus}, ${paymentMethod}, 'pending_payment')`)
   for (const item of available) await db.execute(sql`INSERT INTO marketplace_order_items (id, "orderId", "productId", "sellerId", quantity, "unitPrice") SELECT ${crypto.randomUUID()}, ${orderId}, p.id, p."sellerId", ${item.quantity}, p.price FROM products p WHERE p.id = ${String(item.product_id)} AND p.published = true AND p.availability = 'available'`)
   await db.execute(sql`DELETE FROM cart_items WHERE "cartId" IN (SELECT id FROM carts WHERE "buyerId" = ${buyerId})`)
   revalidatePath('/buyer')
   revalidatePath('/buyer/cart')
   revalidatePath('/buyer/orders')
   revalidatePath('/seller')
-  return { id: orderId, paymentStatus: 'unavailable' as const, total: subtotal }
+  return { id: orderId, paymentStatus, total: subtotal }
 }
 
 export async function getBuyerOrders() {
@@ -86,6 +87,6 @@ export async function getBuyerOrders() {
   if (!hasDatabaseConnection()) {
     return getDemoBuyerOrders(buyerId)
   }
-  const result = await db.execute(sql`SELECT id, subtotal, shipping, total, "paymentStatus", "orderStatus", "shippingAddress", "createdAt" FROM marketplace_orders WHERE "buyerId" = ${buyerId} ORDER BY "createdAt" DESC`)
+  const result = await db.execute(sql`SELECT id, subtotal, shipping, total, "paymentStatus", "paymentMethod", "orderStatus", "shippingAddress", "createdAt" FROM marketplace_orders WHERE "buyerId" = ${buyerId} ORDER BY "createdAt" DESC`)
   return (result as unknown as { rows?: Record<string, unknown>[] }).rows ?? []
 }
