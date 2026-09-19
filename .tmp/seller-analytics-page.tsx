@@ -1,4 +1,4 @@
-﻿import Link from 'next/link'
+import Link from 'next/link'
 
 const metrics = [
   { label: 'Product views', value: '2,430', note: '+18% from last week' },

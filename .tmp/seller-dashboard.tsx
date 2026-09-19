@@ -1,11 +1,10 @@
-﻿'use client'
+'use client'
 
 import Link from 'next/link'
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { ArrowRight, BarChart3, Bell, Bot, Boxes, CircleDollarSign, LayoutDashboard, MessageSquare, Package, Plus, Settings, Sparkles, Store } from 'lucide-react'
 import { authClient } from '@/lib/auth-client'
-import { RequireSeller } from '@/components/auth-provider'
 
 const navItems = [
   { label: 'Dashboard', icon: LayoutDashboard },
@@ -23,42 +22,41 @@ const navItems = [
   { label: 'Settings', icon: Settings },
 ]
 
+const summaryCards = [
+  { label: 'Total products', value: '28', trend: '5 this month' },
+  { label: 'Published', value: '19', trend: '+4 from last week' },
+  { label: 'Pending orders', value: '12', trend: '6 need dispatch' },
+  { label: 'Completed orders', value: '74', trend: '95% fulfilment' },
+  { label: 'Revenue', value: '₹86,400', trend: 'This month' },
+  { label: 'Inquiries', value: '21', trend: '9 hot leads' },
+]
+
+const recentOrders = [
+  { id: '#KLS-1048', buyer: 'Aditi S.', item: 'Handwoven shawl', amount: '₹3,600', status: 'Packed' },
+  { id: '#KLS-1047', buyer: 'Rohit M.', item: 'Terracotta lamp', amount: '₹1,720', status: 'In transit' },
+  { id: '#KLS-1046', buyer: 'Meera K.', item: 'Block print set', amount: '₹2,450', status: 'Awaiting review' },
+]
+
+const topProducts = [
+  { name: 'Banjara handloom stole', sales: 41, revenue: '₹23,900' },
+  { name: 'Copper diya set', sales: 28, revenue: '₹17,200' },
+  { name: 'Palm leaf basket', sales: 19, revenue: '₹12,600' },
+]
+
 const aiSuggestions = [
   { title: 'Image enhancement', detail: 'Sharpen your product photos and improve light balance to raise CTR by 18%.' },
   { title: 'Description rewrite', detail: 'Use the artisan origin story for higher trust and better conversions on mobile.' },
   { title: 'Pricing assistant', detail: 'Your current margin is healthy; consider a 7% increase on festive sets.' },
 ]
 
-type DashboardData = {
-  summary: { totalProducts: number; published: number; pendingOrders: number; completedOrders: number; revenue: number; inquiries: number }
-  recentOrders: { orderId: string; buyer: string; item: string; amount: number; status: string }[]
-  topProducts: { name: string; sales: number; revenue: number }[]
-}
-
-const emptyDashboard: DashboardData = {
-  summary: { totalProducts: 0, published: 0, pendingOrders: 0, completedOrders: 0, revenue: 0, inquiries: 0 },
-  recentOrders: [],
-  topProducts: [],
-}
-
 export default function SellerPage() {
   const [active, setActive] = useState('Dashboard')
   const [mobileOpen, setMobileOpen] = useState(false)
-  const [dashboard, setDashboard] = useState<DashboardData>(emptyDashboard)
   const router = useRouter()
 
-  useEffect(() => {
-    fetch('/api/seller/dashboard')
-      .then((response) => response.ok ? response.json() : Promise.reject(new Error('Unable to load seller data')))
-      .then((data: DashboardData) => setDashboard(data))
-      .catch(() => setDashboard(emptyDashboard))
-  }, [])
-
   const logout = async () => {
-    const result = await authClient.signOut()
-    if (result.error) return
-    router.replace('/')
-    router.refresh()
+    await authClient.signOut()
+    router.push('/')
   }
 
   const renderSection = useMemo(() => {
@@ -75,7 +73,7 @@ export default function SellerPage() {
             </div>
 
             <div className="grid gap-4 md:grid-cols-2">
-              {dashboard.topProducts.length === 0 ? <p className="rounded-2xl bg-[#fbfaf7] p-5 text-sm text-[#65756c]">Your paid product performance will appear here after your first order.</p> : dashboard.topProducts.map((product) => (
+              {topProducts.map((product) => (
                 <article key={product.name} className="rounded-[1.75rem] border border-[#e4ded2] bg-white p-5">
                   <div className="flex items-start justify-between gap-3">
                     <div>
@@ -89,7 +87,7 @@ export default function SellerPage() {
                       <p className="text-xs text-[#65756c]">Units sold</p>
                       <p className="mt-2 font-serif text-3xl">{product.sales}</p>
                     </div>
-                    <p className="text-lg font-semibold text-[#20342b]">₹{Number(product.revenue).toLocaleString('en-IN')}</p>
+                    <p className="text-lg font-semibold text-[#20342b]">{product.revenue}</p>
                   </div>
                 </article>
               ))}
@@ -110,14 +108,14 @@ export default function SellerPage() {
                 <span>Amount</span>
                 <span>Status</span>
               </div>
-              {dashboard.recentOrders.length === 0 ? <p className="p-5 text-sm text-[#65756c]">No orders have been placed for your products yet.</p> : dashboard.recentOrders.map((order) => (
-                <div key={order.orderId} className="grid grid-cols-[1.4fr_1fr_1fr_0.8fr] gap-4 border-b border-[#f7f4f0] px-5 py-4 text-sm last:border-b-0">
+              {recentOrders.map((order) => (
+                <div key={order.id} className="grid grid-cols-[1.4fr_1fr_1fr_0.8fr] gap-4 border-b border-[#f7f4f0] px-5 py-4 text-sm last:border-b-0">
                   <div>
-                    <p className="font-semibold text-[#20342b]">#{order.orderId.slice(0, 8)}</p>
+                    <p className="font-semibold text-[#20342b]">{order.id}</p>
                     <p className="mt-1 text-[#65756c]">{order.item}</p>
                   </div>
                   <span className="text-[#20342b]">{order.buyer}</span>
-                  <span className="font-semibold text-[#20342b]">₹{Number(order.amount).toLocaleString('en-IN')}</span>
+                  <span className="font-semibold text-[#20342b]">{order.amount}</span>
                   <span className="inline-flex w-fit rounded-full bg-[#eef4ed] px-2.5 py-1 text-xs font-bold text-[#20342b]">{order.status}</span>
                 </div>
               ))}
@@ -167,14 +165,7 @@ export default function SellerPage() {
         return (
           <div className="space-y-6">
             <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-              {[
-                { label: 'Total products', value: dashboard.summary.totalProducts.toLocaleString('en-IN'), trend: 'All catalog items' },
-                { label: 'Published', value: dashboard.summary.published.toLocaleString('en-IN'), trend: 'Visible in marketplace' },
-                { label: 'Pending orders', value: dashboard.summary.pendingOrders.toLocaleString('en-IN'), trend: 'Need fulfilment' },
-                { label: 'Completed orders', value: dashboard.summary.completedOrders.toLocaleString('en-IN'), trend: 'Paid and delivered' },
-                { label: 'Revenue', value: `₹${Number(dashboard.summary.revenue).toLocaleString('en-IN')}`, trend: 'Paid order value' },
-                { label: 'Inquiries', value: dashboard.summary.inquiries.toLocaleString('en-IN'), trend: 'Buyer conversations' },
-              ].map((card) => (
+              {summaryCards.map((card) => (
                 <div key={card.label} className="rounded-[1.75rem] border border-[#e4ded2] bg-white p-5">
                   <p className="text-sm text-[#65756c]">{card.label}</p>
                   <p className="mt-4 font-serif text-4xl">{card.value}</p>
@@ -234,8 +225,7 @@ export default function SellerPage() {
     setMobileOpen(false)
   }
 
-  return <RequireSeller>
-    <>
+  return (
     <main className="min-h-screen bg-[#f7f5ef] text-[#20342b]">
       <div className="flex min-h-screen">
         <aside className="hidden w-72 shrink-0 flex-col border-r border-[#e4ded2] bg-[#fbfaf7] p-6 lg:flex">
@@ -295,6 +285,5 @@ export default function SellerPage() {
         </section>
       </div>
     </main>
-    </>
-  </RequireSeller>
+  )
 }

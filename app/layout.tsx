@@ -3,6 +3,7 @@ import type { Metadata } from 'next'
 import './globals.css'
 import { InstallPrompt } from './install-prompt'
 import { NativeAppBridge } from '@/components/native-app-bridge'
+import { AuthProvider } from '@/components/auth-provider'
 
 export const metadata: Metadata = {
   title: "KalaSetu · India's Handmade Heritage",
@@ -22,7 +23,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="antialiased">
-        {children}
+        <AuthProvider>{children}</AuthProvider>
         <InstallPrompt />
         <NativeAppBridge />
         {process.env.NODE_ENV === 'production' && <Analytics />}

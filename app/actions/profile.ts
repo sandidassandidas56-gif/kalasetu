@@ -21,3 +21,11 @@ export async function saveProfile(role: 'buyer' | 'seller', data: { avatarUrl?: 
   }
   revalidatePath(role === 'buyer' ? '/buyer' : '/seller')
 }
+
+export async function setAccountRole(role: 'buyer' | 'seller') {
+  const id = await userId()
+  if (!hasDatabaseConnection()) throw new Error('Database connection is required to set an account role.')
+  await db.execute(sql`UPDATE "user" SET role = ${role} WHERE id = ${id} AND (role IS NULL OR role = '')`)
+  revalidatePath('/seller')
+  revalidatePath('/buyer')
+}
