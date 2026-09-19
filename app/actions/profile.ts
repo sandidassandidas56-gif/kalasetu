@@ -1,6 +1,6 @@
 'use server'
 
-import { db, hasDatabaseConnection } from '@/lib/db'
+import { db, ensureMarketplaceSchema, hasDatabaseConnection } from '@/lib/db'
 import { sql } from 'drizzle-orm'
 import { auth, getCurrentSession } from '@/lib/auth'
 import { headers } from 'next/headers'
@@ -38,12 +38,13 @@ export async function setAccountRole(role: 'buyer' | 'seller'): Promise<{ ok: tr
     if (!hasDatabaseConnection()) return { ok: false, message: 'Database connection is required to set an account role.' }
     const session = await getCurrentSession()
     if (!session?.user) return { ok: false, message: 'Your authentication session could not be validated.' }
-    const currentRole = (session.user as { role?: string }).role
-    if (currentRole === role) return { ok: true }
-    await db.execute(sql`UPDATE "user" SET role = ${role}, "updatedAt" = now() WHERE id = ${session.user.id}`)
+    await ensureMarketplaceSchema()
     const result = await db.execute(sql`SELECT role FROM "user" WHERE id = ${session.user.id} LIMIT 1`)
     const persistedRole = (result as { rows?: { role?: string | null }[] }).rows?.[0]?.role
-    if (persistedRole !== role) return { ok: false, message: 'The selected KalaSetu role was not persisted.' }
+    if (persistedRole === role) return { ok: true }
+    if (persistedRole === 'buyer' || persistedRole === 'seller') return { ok: false, message: `This Google account is already registered as a ${persistedRole === 'seller' ? 'Seller' : 'Buyer'}. Please continue as a ${persistedRole === 'seller' ? 'Seller' : 'Buyer'}.` }
+    const updated = await db.execute(sql`UPDATE "user" SET role = ${role}, "updatedAt" = now() WHERE id = ${session.user.id} AND role IS NULL RETURNING role`)
+    if (!((updated as { rows?: unknown[] }).rows ?? []).length) return { ok: false, message: 'This account role was set by another login attempt. Please sign in again.' }
     revalidatePath('/seller')
     revalidatePath('/buyer')
     return { ok: true }

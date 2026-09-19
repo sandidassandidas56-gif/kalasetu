@@ -19,7 +19,7 @@ function AuthContent() {
   async function continueWithGoogle() {
     setPending(true)
     setMessage('')
-    const result = await authClient.signIn.social({ provider: 'google', callbackURL: `/auth/complete?role=${role}`, errorCallbackURL: `/auth?role=${role}&error=oauth-failed` })
+    const result = await authClient.signIn.social({ provider: 'google', callbackURL: `/auth/complete?role=${role}`, errorCallbackURL: `/auth?role=${role}&error=oauth-failed`, additionalParams: { prompt: 'select_account' } })
     if (result.error) {
       setPending(false)
       setMessage(result.error.message || 'Google sign-in was cancelled or could not be completed. Please try again.')

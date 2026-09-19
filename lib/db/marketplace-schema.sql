@@ -118,3 +118,4 @@ CREATE INDEX IF NOT EXISTS marketplace_order_items_seller_idx ON marketplace_ord
 CREATE INDEX IF NOT EXISTS inquiries_seller_idx ON inquiries ("sellerId");
 CREATE INDEX IF NOT EXISTS notifications_user_idx ON notifications ("userId");
 CREATE INDEX IF NOT EXISTS reviews_product_idx ON reviews ("productId");
+CREATE UNIQUE INDEX IF NOT EXISTS user_email_lower_unique_idx ON "user" (lower(email));
