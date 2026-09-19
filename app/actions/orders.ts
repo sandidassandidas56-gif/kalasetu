@@ -29,4 +29,3 @@ export async function updateSellerOrderStatus(orderId: string, status: string) {
   revalidatePath('/buyer/notifications')
 }
 
-export { statuses }
