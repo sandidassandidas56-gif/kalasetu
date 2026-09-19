@@ -2,7 +2,6 @@ import { NextResponse } from 'next/server'
 import { sql } from 'drizzle-orm'
 import { getCurrentSession } from '@/lib/auth'
 import { db, ensureMarketplaceSchema, hasDatabaseConnection } from '@/lib/db'
-import { getDemoSellerDashboard } from '@/lib/demo-data'
 
 export const dynamic = 'force-dynamic'
 
@@ -12,8 +11,6 @@ const emptyDashboard = {
   topProducts: [],
 }
 
-const fallbackDashboard = getDemoSellerDashboard()
-
 const rows = (value: unknown) => (value as { rows?: Record<string, unknown>[] }).rows ?? []
 
 export async function GET() {
@@ -21,7 +18,7 @@ export async function GET() {
     const session = await getCurrentSession()
     const role = (session?.user as { role?: string } | undefined)?.role
     if (!session?.user || role !== 'seller') return NextResponse.json({ error: 'Seller access required' }, { status: 401 })
-    if (!hasDatabaseConnection()) return NextResponse.json(fallbackDashboard)
+    if (!hasDatabaseConnection()) return NextResponse.json({ ...emptyDashboard, error: 'Seller dashboard data is unavailable because the database is not configured.' }, { status: 503 })
     await ensureMarketplaceSchema()
 
     const sellerId = session.user.id
@@ -102,11 +99,7 @@ export async function GET() {
       })),
     }
 
-    if (!dashboard.summary.totalProducts && !dashboard.summary.published && !dashboard.recentOrders.length && !dashboard.topProducts.length) {
-      return NextResponse.json(fallbackDashboard)
-    }
-
-    return NextResponse.json(dashboard)
+    return NextResponse.json(dashboard, { headers: { 'Cache-Control': 'no-store' } })
   } catch (error) {
     console.error('SELLER DASHBOARD FAILED', { error: error instanceof Error ? error.message : 'unknown error' })
     return NextResponse.json({ ...emptyDashboard, error: 'Seller dashboard data is temporarily unavailable.' }, { status: 503 })
