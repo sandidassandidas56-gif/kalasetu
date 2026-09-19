@@ -22,6 +22,17 @@ export async function saveProfile(role: 'buyer' | 'seller', data: { avatarUrl?: 
   revalidatePath(role === 'buyer' ? '/buyer' : '/seller')
 }
 
+export async function saveSellerProfile(formData: FormData) {
+  await saveProfile('seller', {
+    shopName: String(formData.get('shopName') ?? '').trim(),
+    state: String(formData.get('state') ?? '').trim(),
+    bio: String(formData.get('bio') ?? '').trim(),
+    address: String(formData.get('address') ?? '').trim(),
+    phone: String(formData.get('phone') ?? '').trim(),
+  })
+  revalidatePath('/seller/profile')
+}
+
 export async function setAccountRole(role: 'buyer' | 'seller'): Promise<{ ok: true } | { ok: false; message: string }> {
   try {
     if (!hasDatabaseConnection()) return { ok: false, message: 'Database connection is required to set an account role.' }
