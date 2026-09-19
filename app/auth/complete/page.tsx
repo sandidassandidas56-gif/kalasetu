@@ -2,7 +2,7 @@
 
 import { Suspense, useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { setAccountPassword, setAccountRole } from '@/app/actions/profile'
+import { getAccountRole, setAccountPassword, setAccountRole } from '@/app/actions/profile'
 import { useAuth, type AccountRole } from '@/components/auth-provider'
 
 function AuthCompleteContent() {
@@ -34,11 +34,19 @@ function AuthCompleteContent() {
     setMessage('Creating your secure KalaSetu account...')
     try {
       await setAccountRole(selectedRole)
+      const persistedRole = await getAccountRole()
+      if (persistedRole !== selectedRole) throw new Error('The selected KalaSetu role was not persisted.')
+    } catch (error) {
+      setSaving(false)
+      setMessage(error instanceof Error ? error.message : 'The KalaSetu role could not be saved.')
+      return
+    }
+    try {
       await setAccountPassword(password)
       window.location.assign(selectedRole === 'seller' ? '/seller' : '/buyer')
-    } catch {
+    } catch (error) {
       setSaving(false)
-      setMessage('Your Google account is authenticated, but the KalaSetu role could not be saved. Please try again.')
+      setMessage(error instanceof Error ? error.message : 'The password could not be saved. Please try again.')
     }
   }
 

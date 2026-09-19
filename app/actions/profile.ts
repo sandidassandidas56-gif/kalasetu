@@ -52,3 +52,13 @@ export async function setAccountPassword(password: string) {
     throw new Error('The authenticated account could not save its password.')
   }
 }
+
+export async function getAccountRole() {
+  const session = await getCurrentSession()
+  if (!session?.user) throw new Error('Your authentication session could not be validated.')
+  if (!hasDatabaseConnection()) throw new Error('Database connection is required to read an account role.')
+  const result = await db.execute(sql`SELECT role FROM "user" WHERE id = ${session.user.id} LIMIT 1`)
+  const role = (result as { rows?: { role?: string | null }[] }).rows?.[0]?.role
+  if (role !== 'buyer' && role !== 'seller') throw new Error('The account role was not persisted.')
+  return role
+}
