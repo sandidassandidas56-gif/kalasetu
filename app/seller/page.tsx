@@ -48,7 +48,7 @@ export default function SellerPage() {
   const router = useRouter()
 
   useEffect(() => {
-    fetch('/api/seller/dashboard')
+    fetch('/api/seller/dashboard', { cache: 'no-store' })
       .then((response) => response.ok ? response.json() : Promise.reject(new Error('Unable to load seller data')))
       .then((data: DashboardData) => setDashboard(data))
       .catch(() => setDashboard(emptyDashboard))

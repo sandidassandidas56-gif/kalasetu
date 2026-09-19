@@ -4,6 +4,8 @@ import { getCurrentSession } from '@/lib/auth'
 import { db, ensureMarketplaceSchema, hasDatabaseConnection } from '@/lib/db'
 import { getDemoSellerDashboard } from '@/lib/demo-data'
 
+export const dynamic = 'force-dynamic'
+
 const emptyDashboard = {
   summary: { totalProducts: 0, published: 0, pendingOrders: 0, completedOrders: 0, revenue: 0, inquiries: 0 },
   recentOrders: [],
