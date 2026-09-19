@@ -42,7 +42,12 @@ function AuthCompleteContent() {
       return
     }
     try {
-      await setAccountPassword(password)
+      const passwordResult = await setAccountPassword(password)
+      if (!passwordResult.ok) {
+        setSaving(false)
+        setMessage(passwordResult.message)
+        return
+      }
       window.location.assign(selectedRole === 'seller' ? '/seller' : '/buyer')
     } catch (error) {
       setSaving(false)
