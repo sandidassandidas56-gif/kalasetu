@@ -88,6 +88,14 @@ export function ensureMarketplaceSchema() {
       body text NOT NULL,
       "read" boolean NOT NULL DEFAULT false,
       "createdAt" timestamptz NOT NULL DEFAULT now(), "updatedAt" timestamptz NOT NULL DEFAULT now()
-    )`)).then(() => db.execute(sql`CREATE INDEX IF NOT EXISTS products_seller_id_idx ON products ("sellerId")`)).then(() => db.execute(sql`CREATE INDEX IF NOT EXISTS products_published_idx ON products (published)`)).then(() => db.execute(sql`CREATE INDEX IF NOT EXISTS marketplace_orders_buyer_idx ON marketplace_orders ("buyerId")`)).then(() => db.execute(sql`CREATE INDEX IF NOT EXISTS marketplace_order_items_seller_idx ON marketplace_order_items ("sellerId")`)).then(() => db.execute(sql`CREATE INDEX IF NOT EXISTS inquiries_seller_idx ON inquiries ("sellerId")`)).then(() => db.execute(sql`CREATE INDEX IF NOT EXISTS notifications_user_idx ON notifications ("userId")`)).then(() => undefined)
+    )`)).then(() => db.execute(sql`CREATE TABLE IF NOT EXISTS reviews (
+      id text PRIMARY KEY,
+      "buyerId" text NOT NULL REFERENCES "user"(id) ON DELETE CASCADE,
+      "productId" text NOT NULL REFERENCES products(id) ON DELETE CASCADE,
+      rating integer NOT NULL CHECK (rating BETWEEN 1 AND 5),
+      body text NOT NULL,
+      "createdAt" timestamptz NOT NULL DEFAULT now(), "updatedAt" timestamptz NOT NULL DEFAULT now(),
+      UNIQUE ("buyerId", "productId")
+    )`)).then(() => db.execute(sql`CREATE INDEX IF NOT EXISTS products_seller_id_idx ON products ("sellerId")`)).then(() => db.execute(sql`CREATE INDEX IF NOT EXISTS products_published_idx ON products (published)`)).then(() => db.execute(sql`CREATE INDEX IF NOT EXISTS marketplace_orders_buyer_idx ON marketplace_orders ("buyerId")`)).then(() => db.execute(sql`CREATE INDEX IF NOT EXISTS marketplace_order_items_seller_idx ON marketplace_order_items ("sellerId")`)).then(() => db.execute(sql`CREATE INDEX IF NOT EXISTS inquiries_seller_idx ON inquiries ("sellerId")`)).then(() => db.execute(sql`CREATE INDEX IF NOT EXISTS notifications_user_idx ON notifications ("userId")`)).then(() => db.execute(sql`CREATE INDEX IF NOT EXISTS reviews_product_idx ON reviews ("productId")`)).then(() => undefined)
   return marketplaceSchemaReady
 }
