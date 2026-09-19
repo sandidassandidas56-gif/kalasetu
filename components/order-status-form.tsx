@@ -1,7 +1,9 @@
 'use client'
 
 import { useTransition } from 'react'
-import { updateSellerOrderStatus, statuses } from '@/app/actions/orders'
+import { updateSellerOrderStatus } from '@/app/actions/orders'
+
+const statuses = ['confirmed', 'in_production', 'shipped', 'delivered', 'cancelled']
 
 export function OrderStatusForm({ orderId, current }: { orderId: string; current: string }) {
   const [pending, startTransition] = useTransition()
