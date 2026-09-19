@@ -29,8 +29,8 @@ export async function setAccountRole(role: 'buyer' | 'seller') {
   const currentRole = (session.user as { role?: string }).role
   if (currentRole === 'buyer' || currentRole === 'seller') return
   try {
-    const result = await db.execute(sql`UPDATE "user" SET role = ${role}, "updatedAt" = now() WHERE id = ${session.user.id} AND (role IS NULL OR role = '')`)
-    const rowsChanged = Number((result as { rowCount?: number }).rowCount ?? 0)
+    const result = await db.execute(sql`UPDATE "user" SET role = ${role}, "updatedAt" = now() WHERE id = ${session.user.id} AND (role IS NULL OR role = '') RETURNING id`)
+    const rowsChanged = ((result as { rows?: unknown[] }).rows ?? []).length
     if (rowsChanged !== 1) throw new Error('No authenticated user row was updated.')
   } catch (error) {
     console.error('AUTH ROLE SAVE FAILED', { userId: session.user.id, role, error: error instanceof Error ? error.message : 'unknown error' })

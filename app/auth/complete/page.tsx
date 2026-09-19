@@ -35,7 +35,7 @@ function AuthCompleteContent() {
     try {
       await setAccountRole(selectedRole)
       await setAccountPassword(password)
-      router.replace(selectedRole === 'seller' ? '/seller' : '/buyer')
+      window.location.assign(selectedRole === 'seller' ? '/seller' : '/buyer')
     } catch {
       setSaving(false)
       setMessage('Your Google account is authenticated, but the KalaSetu role could not be saved. Please try again.')
