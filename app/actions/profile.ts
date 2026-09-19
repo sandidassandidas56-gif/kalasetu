@@ -2,7 +2,7 @@
 
 import { db, hasDatabaseConnection } from '@/lib/db'
 import { sql } from 'drizzle-orm'
-import { getCurrentSession } from '@/lib/auth'
+import { auth, getCurrentSession } from '@/lib/auth'
 import { headers } from 'next/headers'
 import { revalidatePath } from 'next/cache'
 
@@ -23,9 +23,17 @@ export async function saveProfile(role: 'buyer' | 'seller', data: { avatarUrl?: 
 }
 
 export async function setAccountRole(role: 'buyer' | 'seller') {
-  const id = await userId()
   if (!hasDatabaseConnection()) throw new Error('Database connection is required to set an account role.')
-  await db.execute(sql`UPDATE "user" SET role = ${role} WHERE id = ${id} AND (role IS NULL OR role = '')`)
+  const session = await getCurrentSession()
+  if (!session?.user) throw new Error('Your authentication session could not be validated.')
+  const currentRole = (session.user as { role?: string }).role
+  if (currentRole === 'buyer' || currentRole === 'seller') return
+  try {
+    await auth.api.updateUser({ headers: await headers(), body: { role } })
+  } catch (error) {
+    console.error('AUTH ROLE SAVE FAILED', { userId: session.user.id, role, error: error instanceof Error ? error.message : 'unknown error' })
+    throw new Error('The authenticated account could not save its KalaSetu role.')
+  }
   revalidatePath('/seller')
   revalidatePath('/buyer')
 }
