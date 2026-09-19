@@ -216,20 +216,21 @@ export default function SellerPage() {
   }, [active, router, dashboard])
 
   const navigateItem = (item: string) => {
-    if (item === 'Add Product') {
-      router.push('/seller/add-product')
-      return
+    const routes: Record<string, string> = {
+      Products: '/seller/products',
+      'Add Product': '/seller/add-product',
+      Orders: '/seller/orders',
+      'Buyer Inquiries': '/seller/inquiries',
+      Messages: '/seller/messages',
+      'AI Studio': '/seller/ai-studio',
+      Analytics: '/seller/analytics',
+      'Finance & Invoices': '/seller/finance',
+      Notifications: '/seller/notifications',
+      'Seller Profile': '/seller/profile',
+      Settings: '/seller/settings',
     }
-    if (item === 'AI Studio') {
-      router.push('/seller/ai-studio')
-      return
-    }
-    if (item === 'Buyer Inquiries') {
-      router.push('/seller/inquiries')
-      return
-    }
-    if (item === 'Orders') {
-      router.push('/seller/orders')
+    if (routes[item]) {
+      router.push(routes[item])
       return
     }
     setActive(item)
@@ -273,7 +274,7 @@ export default function SellerPage() {
 
               <div className="flex gap-2">
                 <Link href="/" className="hidden rounded-full border border-[#d8d1c4] px-4 py-2 text-sm sm:block">Marketplace</Link>
-                <button onClick={() => setActive('Seller Profile')} className="rounded-full bg-[#20342b] px-4 py-2 text-sm font-bold text-white">Profile</button>
+                <button onClick={() => router.push('/seller/profile')} className="rounded-full bg-[#20342b] px-4 py-2 text-sm font-bold text-white">Profile</button>
               </div>
             </header>
 
