@@ -26,5 +26,80 @@ CREATE TABLE IF NOT EXISTS products (
   "updatedAt" timestamptz NOT NULL DEFAULT now()
 );
 
+CREATE TABLE IF NOT EXISTS carts (
+  id text PRIMARY KEY,
+  "buyerId" text NOT NULL UNIQUE REFERENCES "user"(id) ON DELETE CASCADE,
+  "createdAt" timestamptz NOT NULL DEFAULT now(),
+  "updatedAt" timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS cart_items (
+  id text PRIMARY KEY,
+  "cartId" text NOT NULL REFERENCES carts(id) ON DELETE CASCADE,
+  "productId" text NOT NULL REFERENCES products(id) ON DELETE CASCADE,
+  quantity integer NOT NULL DEFAULT 1,
+  "createdAt" timestamptz NOT NULL DEFAULT now(),
+  "updatedAt" timestamptz NOT NULL DEFAULT now(),
+  UNIQUE ("cartId", "productId")
+);
+
+CREATE TABLE IF NOT EXISTS wishlists (
+  id text PRIMARY KEY,
+  "buyerId" text NOT NULL REFERENCES "user"(id) ON DELETE CASCADE,
+  "productId" text NOT NULL REFERENCES products(id) ON DELETE CASCADE,
+  "createdAt" timestamptz NOT NULL DEFAULT now(),
+  UNIQUE ("buyerId", "productId")
+);
+
+CREATE TABLE IF NOT EXISTS marketplace_orders (
+  id text PRIMARY KEY,
+  "buyerId" text NOT NULL REFERENCES "user"(id) ON DELETE CASCADE,
+  subtotal numeric NOT NULL DEFAULT 0,
+  shipping numeric NOT NULL DEFAULT 0,
+  total numeric NOT NULL DEFAULT 0,
+  "shippingAddress" text NOT NULL DEFAULT '',
+  "paymentStatus" text NOT NULL DEFAULT 'pending_payment',
+  "orderStatus" text NOT NULL DEFAULT 'pending_payment',
+  "createdAt" timestamptz NOT NULL DEFAULT now(),
+  "updatedAt" timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS marketplace_order_items (
+  id text PRIMARY KEY,
+  "orderId" text NOT NULL REFERENCES marketplace_orders(id) ON DELETE CASCADE,
+  "productId" text NOT NULL REFERENCES products(id) ON DELETE CASCADE,
+  "sellerId" text NOT NULL REFERENCES "user"(id) ON DELETE CASCADE,
+  quantity integer NOT NULL DEFAULT 1,
+  "unitPrice" numeric NOT NULL DEFAULT 0,
+  "createdAt" timestamptz NOT NULL DEFAULT now(),
+  "updatedAt" timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS inquiries (
+  id text PRIMARY KEY,
+  "buyerId" text NOT NULL REFERENCES "user"(id) ON DELETE CASCADE,
+  "sellerId" text NOT NULL REFERENCES "user"(id) ON DELETE CASCADE,
+  "productId" text REFERENCES products(id) ON DELETE SET NULL,
+  subject text NOT NULL,
+  message text NOT NULL,
+  status text NOT NULL DEFAULT 'new',
+  "createdAt" timestamptz NOT NULL DEFAULT now(),
+  "updatedAt" timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS notifications (
+  id text PRIMARY KEY,
+  "userId" text NOT NULL REFERENCES "user"(id) ON DELETE CASCADE,
+  title text NOT NULL,
+  body text NOT NULL,
+  "read" boolean NOT NULL DEFAULT false,
+  "createdAt" timestamptz NOT NULL DEFAULT now(),
+  "updatedAt" timestamptz NOT NULL DEFAULT now()
+);
+
 CREATE INDEX IF NOT EXISTS products_seller_id_idx ON products ("sellerId");
 CREATE INDEX IF NOT EXISTS products_published_idx ON products (published);
+CREATE INDEX IF NOT EXISTS marketplace_orders_buyer_idx ON marketplace_orders ("buyerId");
+CREATE INDEX IF NOT EXISTS marketplace_order_items_seller_idx ON marketplace_order_items ("sellerId");
+CREATE INDEX IF NOT EXISTS inquiries_seller_idx ON inquiries ("sellerId");
+CREATE INDEX IF NOT EXISTS notifications_user_idx ON notifications ("userId");

@@ -213,7 +213,7 @@ export default function SellerPage() {
           </div>
         )
     }
-  }, [active, router])
+  }, [active, router, dashboard])
 
   const navigateItem = (item: string) => {
     if (item === 'Add Product') {
