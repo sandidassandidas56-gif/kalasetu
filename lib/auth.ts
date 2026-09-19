@@ -61,7 +61,7 @@ export const auth = betterAuth({
   socialProviders,
   user: {
     additionalFields: {
-      role: { type: 'string', required: false },
+      role: { type: 'string', required: false, input: true },
     },
   },
   trustedOrigins: [

@@ -2,7 +2,7 @@
 
 import { Suspense, useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { setAccountRole } from '@/app/actions/profile'
+import { setAccountPassword, setAccountRole } from '@/app/actions/profile'
 import { useAuth, type AccountRole } from '@/components/auth-provider'
 
 function AuthCompleteContent() {
@@ -11,6 +11,8 @@ function AuthCompleteContent() {
   const { user, role, isLoading, isVerified, error } = useAuth()
   const [message, setMessage] = useState('Finishing secure sign-in...')
   const [saving, setSaving] = useState(false)
+  const [selectedRole, setSelectedRole] = useState<AccountRole | null>(null)
+  const [password, setPassword] = useState('')
   const suggestedRole = searchParams.get('role') === 'seller' ? 'seller' : 'buyer'
 
   useEffect(() => {
@@ -19,11 +21,21 @@ function AuthCompleteContent() {
   }, [isLoading, role, router, saving, user])
 
   async function chooseRole(nextRole: AccountRole) {
+    setSelectedRole(nextRole)
+    setMessage('')
+  }
+
+  async function finishRegistration() {
+    if (!selectedRole || password.length < 8) {
+      setMessage('Choose a role and enter a password of at least 8 characters.')
+      return
+    }
     setSaving(true)
-    setMessage('Saving your account role...')
+    setMessage('Creating your secure KalaSetu account...')
     try {
-      await setAccountRole(nextRole)
-      router.replace(nextRole === 'seller' ? '/seller' : '/buyer')
+      await setAccountRole(selectedRole)
+      await setAccountPassword(password)
+      router.replace(selectedRole === 'seller' ? '/seller' : '/buyer')
     } catch {
       setSaving(false)
       setMessage('Your Google account is authenticated, but the KalaSetu role could not be saved. Please try again.')
@@ -34,7 +46,7 @@ function AuthCompleteContent() {
   if (isLoading || !user) return <main className="flex min-h-screen items-center justify-center bg-[#f7f5ef] p-6 text-[#20342b]"><p className="rounded-2xl bg-white p-6 text-sm font-semibold">{message}</p></main>
   if (!isVerified) return <main className="flex min-h-screen items-center justify-center bg-[#f7f5ef] p-6 text-sm text-red-700">Google did not confirm this email address, so the KalaSetu account was not activated.</main>
   if (role) return <main className="flex min-h-screen items-center justify-center bg-[#f7f5ef] p-6 text-[#20342b]"><p className="rounded-2xl bg-white p-6 text-sm font-semibold">Opening your KalaSetu account...</p></main>
-  return <main className="flex min-h-screen items-center justify-center bg-[#f7f5ef] p-6 text-[#20342b]"><section className="w-full max-w-md rounded-3xl bg-white p-8"><p className="text-xs font-bold uppercase tracking-[0.2em] text-[#d9704b]">Google account verified by provider</p><h1 className="mt-3 font-serif text-4xl">Choose your KalaSetu path.</h1><p className="mt-3 text-sm text-[#65756c]">Your Google session is active. Choose a role to finish setting up your account.</p><div className="mt-7 grid gap-3"><button type="button" disabled={saving} onClick={() => void chooseRole(suggestedRole)} className="rounded-full bg-[#20342b] px-5 py-3 text-sm font-bold text-white">Continue as {suggestedRole}</button><button type="button" disabled={saving} onClick={() => void chooseRole(suggestedRole === 'seller' ? 'buyer' : 'seller')} className="rounded-full border border-[#d8d1c4] px-5 py-3 text-sm font-bold">Continue as {suggestedRole === 'seller' ? 'buyer' : 'seller'}</button></div><p className="mt-5 text-sm text-red-700" role="alert">{message !== 'Finishing secure sign-in...' ? message : ''}</p></section></main>
+  return <main className="flex min-h-screen items-center justify-center bg-[#f7f5ef] p-6 text-[#20342b]"><section className="w-full max-w-md rounded-3xl bg-white p-8"><p className="text-xs font-bold uppercase tracking-[0.2em] text-[#d9704b]">Google account verified by provider</p>{!selectedRole ? <><h1 className="mt-3 font-serif text-4xl">Choose your KalaSetu path.</h1><p className="mt-3 text-sm text-[#65756c]">Your Google session is active. Choose a role to finish setting up your account.</p><div className="mt-7 grid gap-3"><button type="button" disabled={saving} onClick={() => void chooseRole(suggestedRole)} className="rounded-full bg-[#20342b] px-5 py-3 text-sm font-bold text-white">Continue as {suggestedRole}</button><button type="button" disabled={saving} onClick={() => void chooseRole(suggestedRole === 'seller' ? 'buyer' : 'seller')} className="rounded-full border border-[#d8d1c4] px-5 py-3 text-sm font-bold">Continue as {suggestedRole === 'seller' ? 'buyer' : 'seller'}</button></div></> : <><h1 className="mt-3 font-serif text-4xl">Secure your account.</h1><p className="mt-3 text-sm text-[#65756c]">You chose {selectedRole}. Create a password so you can sign in with this email later.</p><label className="mt-7 flex flex-col gap-2 text-sm font-semibold">Password<input type="password" minLength={8} value={password} onChange={event => setPassword(event.target.value)} className="rounded-xl border border-[#d8d1c4] px-4 py-3 font-normal outline-none focus:border-[#e17b3f]" /></label><button type="button" disabled={saving || password.length < 8} onClick={() => void finishRegistration()} className="mt-5 w-full rounded-full bg-[#20342b] px-5 py-3 text-sm font-bold text-white disabled:opacity-60">{saving ? 'Creating account...' : 'Finish registration'}</button></>}<p className="mt-5 text-sm text-red-700" role="alert">{message !== 'Finishing secure sign-in...' ? message : ''}</p></section></main>
 }
 
 export default function AuthCompletePage() {

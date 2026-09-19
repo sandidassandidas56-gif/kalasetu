@@ -37,3 +37,16 @@ export async function setAccountRole(role: 'buyer' | 'seller') {
   revalidatePath('/seller')
   revalidatePath('/buyer')
 }
+
+export async function setAccountPassword(password: string) {
+  if (!hasDatabaseConnection()) throw new Error('Database connection is required to set a password.')
+  if (password.length < 8) throw new Error('Password must be at least 8 characters.')
+  const session = await getCurrentSession()
+  if (!session?.user) throw new Error('Your authentication session could not be validated.')
+  try {
+    await auth.api.setPassword({ headers: await headers(), body: { newPassword: password } })
+  } catch (error) {
+    console.error('AUTH PASSWORD SAVE FAILED', { userId: session.user.id, error: error instanceof Error ? error.message : 'unknown error' })
+    throw new Error('The authenticated account could not save its password.')
+  }
+}
