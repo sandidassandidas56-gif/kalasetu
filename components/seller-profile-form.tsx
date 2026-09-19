@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { saveProfile } from '@/app/actions/profile'
 
 type ProfileValues = {
   shopName: string
@@ -23,7 +22,9 @@ export function SellerProfileForm({ initial }: { initial: ProfileValues }) {
     setSaving(true)
     setMessage('')
     try {
-      await saveProfile('seller', values)
+      const response = await fetch('/api/seller/profile', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(values) })
+      const result = await response.json() as { error?: string }
+      if (!response.ok) throw new Error(result.error || 'The seller profile could not be saved.')
       setMessage('Seller profile saved.')
     } catch (error) {
       setMessage(error instanceof Error ? error.message : 'The seller profile could not be saved.')
