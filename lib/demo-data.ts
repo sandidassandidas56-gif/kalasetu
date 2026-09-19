@@ -244,3 +244,26 @@ export function createDemoCheckoutOrder(userId: string, address: string) {
   demoCartByUser[userId] = []
   return order
 }
+
+export function getDemoSellerDashboard() {
+  return {
+    summary: {
+      totalProducts: 12,
+      published: 9,
+      pendingOrders: 3,
+      completedOrders: 18,
+      revenue: 468000,
+      inquiries: 9,
+    },
+    recentOrders: [
+      { orderId: 'ORD-28491', buyer: 'Nisha', item: 'Indigo Dabu Table Runner', amount: 2400, status: 'shipped' },
+      { orderId: 'ORD-28402', buyer: 'Meera', item: 'Terracotta Surahi Vase', amount: 1250, status: 'confirmed' },
+      { orderId: 'ORD-28318', buyer: 'Vihaan', item: 'Kashmiri Papier Mâché Box', amount: 1850, status: 'in_production' },
+    ],
+    topProducts: [
+      { name: 'Indigo Dabu Table Runner', sales: 14, revenue: 33600 },
+      { name: 'Kashmiri Papier Mâché Box', sales: 11, revenue: 20350 },
+      { name: 'Terracotta Surahi Vase', sales: 8, revenue: 10000 },
+    ],
+  }
+}

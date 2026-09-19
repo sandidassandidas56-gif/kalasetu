@@ -2,12 +2,15 @@ import { NextResponse } from 'next/server'
 import { sql } from 'drizzle-orm'
 import { getCurrentSession } from '@/lib/auth'
 import { db, ensureMarketplaceSchema, hasDatabaseConnection } from '@/lib/db'
+import { getDemoSellerDashboard } from '@/lib/demo-data'
 
 const emptyDashboard = {
   summary: { totalProducts: 0, published: 0, pendingOrders: 0, completedOrders: 0, revenue: 0, inquiries: 0 },
   recentOrders: [],
   topProducts: [],
 }
+
+const fallbackDashboard = getDemoSellerDashboard()
 
 const rows = (value: unknown) => (value as { rows?: Record<string, unknown>[] }).rows ?? []
 
@@ -16,7 +19,7 @@ export async function GET() {
     const session = await getCurrentSession()
     const role = (session?.user as { role?: string } | undefined)?.role
     if (!session?.user || role !== 'seller') return NextResponse.json({ error: 'Seller access required' }, { status: 401 })
-    if (!hasDatabaseConnection()) return NextResponse.json(emptyDashboard)
+    if (!hasDatabaseConnection()) return NextResponse.json(fallbackDashboard)
     await ensureMarketplaceSchema()
 
     const sellerId = session.user.id
@@ -74,8 +77,7 @@ export async function GET() {
     const summary = rows(productsSummary)[0] ?? emptyDashboard.summary
     const orderSummary = rows(ordersSummary)[0] ?? emptyDashboard.summary
     const inquiryCount = Number(rows(inquiriesResult)[0]?.inquiries ?? 0)
-
-    return NextResponse.json({
+    const dashboard = {
       summary: {
         totalProducts: Number(summary.totalProducts ?? 0),
         published: Number(summary.published ?? 0),
@@ -96,7 +98,13 @@ export async function GET() {
         sales: Number(row.sales ?? 0),
         revenue: Number(row.revenue ?? 0),
       })),
-    })
+    }
+
+    if (!dashboard.summary.totalProducts && !dashboard.summary.published && !dashboard.recentOrders.length && !dashboard.topProducts.length) {
+      return NextResponse.json(fallbackDashboard)
+    }
+
+    return NextResponse.json(dashboard)
   } catch (error) {
     console.error('SELLER DASHBOARD FAILED', { error: error instanceof Error ? error.message : 'unknown error' })
     return NextResponse.json({ ...emptyDashboard, error: 'Seller dashboard data is temporarily unavailable.' }, { status: 503 })
