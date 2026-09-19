@@ -20,17 +20,42 @@ export async function GET() {
   }
 
   const sellerId = session.user.id
-  const summaryResult = await db.execute(sql`
-    SELECT
-      (SELECT count(*)::int FROM products WHERE "sellerId" = ${sellerId}) AS "totalProducts",
-      (SELECT count(*)::int FROM products WHERE "sellerId" = ${sellerId} AND published = true) AS published,
-      (SELECT count(DISTINCT oi."orderId")::int FROM marketplace_order_items oi JOIN marketplace_orders o ON o.id = oi."orderId" WHERE oi."sellerId" = ${sellerId} AND o."orderStatus" NOT IN ('delivered', 'cancelled')) AS "pendingOrders",
-      (SELECT count(DISTINCT oi."orderId")::int FROM marketplace_order_items oi JOIN marketplace_orders o ON o.id = oi."orderId" WHERE oi."sellerId" = ${sellerId} AND o."orderStatus" = 'delivered' AND o."paymentStatus" = 'paid') AS "completedOrders",
-      (SELECT COALESCE(sum(oi.quantity * oi."unitPrice"), 0)::numeric FROM marketplace_order_items oi JOIN marketplace_orders o ON o.id = oi."orderId" WHERE oi."sellerId" = ${sellerId} AND o."paymentStatus" = 'paid') AS revenue,
-      (SELECT count(*)::int FROM inquiries WHERE "sellerId" = ${sellerId}) AS inquiries
+  const rows = (value: unknown) => (value as { rows?: Record<string, unknown>[] }).rows ?? []
+  const productSummary = await db.execute(sql`
+    SELECT count(*)::int AS "totalProducts", count(*) FILTER (WHERE published = true)::int AS published
+    FROM products WHERE "sellerId" = ${sellerId}
   `)
 
-  const ordersResult = await db.execute(sql`
+  let pendingOrders = 0
+  let completedOrders = 0
+  let revenue = 0
+  let inquiries = 0
+  try {
+    const orderSummary = await db.execute(sql`
+      SELECT
+        count(DISTINCT oi."orderId") FILTER (WHERE o."orderStatus" NOT IN ('delivered', 'cancelled'))::int AS "pendingOrders",
+        count(DISTINCT oi."orderId") FILTER (WHERE o."orderStatus" = 'delivered' AND o."paymentStatus" = 'paid')::int AS "completedOrders",
+        COALESCE(sum(oi.quantity * oi."unitPrice") FILTER (WHERE o."paymentStatus" = 'paid'), 0)::numeric AS revenue
+      FROM marketplace_order_items oi JOIN marketplace_orders o ON o.id = oi."orderId"
+      WHERE oi."sellerId" = ${sellerId}
+    `)
+    const orderRow = ((orderSummary as { rows?: Record<string, unknown>[] }).rows ?? [])[0]
+    pendingOrders = Number(orderRow?.pendingOrders ?? 0)
+    completedOrders = Number(orderRow?.completedOrders ?? 0)
+    revenue = Number(orderRow?.revenue ?? 0)
+  } catch {
+    // Order tables are optional until marketplace checkout is configured.
+  }
+  try {
+    const inquirySummary = await db.execute(sql`SELECT count(*)::int AS count FROM inquiries WHERE "sellerId" = ${sellerId}`)
+    inquiries = Number(((inquirySummary as { rows?: { count?: number }[] }).rows ?? [])[0]?.count ?? 0)
+  } catch {
+    // Inquiry tables are optional until buyer messaging is configured.
+  }
+
+  let recentOrders: Record<string, unknown>[] = []
+  try {
+    const ordersResult = await db.execute(sql`
     SELECT DISTINCT ON (o.id)
       o.id AS "orderId",
       COALESCE(u.name, 'Buyer') AS buyer,
@@ -44,9 +69,15 @@ export async function GET() {
     WHERE oi."sellerId" = ${sellerId}
     ORDER BY o.id, o."createdAt" DESC
     LIMIT 5
-  `)
+    `)
+    recentOrders = rows(ordersResult)
+  } catch {
+    // Order tables are optional until marketplace checkout is configured.
+  }
 
-  const productsResult = await db.execute(sql`
+  let topProducts: Record<string, unknown>[] = []
+  try {
+    const productsResult = await db.execute(sql`
     SELECT
       p.name,
       COALESCE(sum(oi.quantity), 0)::int AS sales,
@@ -58,12 +89,16 @@ export async function GET() {
     GROUP BY p.id, p.name
     ORDER BY sales DESC, p.name
     LIMIT 5
-  `)
+    `)
+    topProducts = rows(productsResult)
+  } catch {
+    const productsResult = await db.execute(sql`SELECT name, 0::int AS sales, 0::numeric AS revenue FROM products WHERE "sellerId" = ${sellerId} ORDER BY "createdAt" DESC LIMIT 5`)
+    topProducts = rows(productsResult)
+  }
 
-  const rows = (value: unknown) => (value as { rows?: Record<string, unknown>[] }).rows ?? []
   return NextResponse.json({
-    summary: rows(summaryResult)[0] ?? { totalProducts: 0, published: 0, pendingOrders: 0, completedOrders: 0, revenue: 0, inquiries: 0 },
-    recentOrders: rows(ordersResult),
-    topProducts: rows(productsResult),
+    summary: { ...(rows(productSummary)[0] ?? { totalProducts: 0, published: 0 }), pendingOrders, completedOrders, revenue, inquiries },
+    recentOrders,
+    topProducts,
   })
 }
