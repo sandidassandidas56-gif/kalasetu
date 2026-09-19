@@ -28,7 +28,7 @@ export async function setAccountRole(role: 'buyer' | 'seller'): Promise<{ ok: tr
     const session = await getCurrentSession()
     if (!session?.user) return { ok: false, message: 'Your authentication session could not be validated.' }
     const currentRole = (session.user as { role?: string }).role
-    if (currentRole === 'buyer' || currentRole === 'seller') return { ok: true }
+    if (currentRole === role) return { ok: true }
     await db.execute(sql`UPDATE "user" SET role = ${role}, "updatedAt" = now() WHERE id = ${session.user.id}`)
     const result = await db.execute(sql`SELECT role FROM "user" WHERE id = ${session.user.id} LIMIT 1`)
     const persistedRole = (result as { rows?: { role?: string | null }[] }).rows?.[0]?.role
