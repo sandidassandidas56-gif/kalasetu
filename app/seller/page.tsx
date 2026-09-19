@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { ArrowRight, BarChart3, Bell, Bot, Boxes, CircleDollarSign, LayoutDashboard, MessageSquare, Package, Plus, Settings, Sparkles, Store } from 'lucide-react'
 import { authClient } from '@/lib/auth-client'
 import { RequireSeller } from '@/components/auth-provider'
+import { SellerNotificationPopover } from '@/components/seller-notification-popover'
 
 const navItems = [
   { label: 'Dashboard', icon: LayoutDashboard },
@@ -239,6 +240,7 @@ export default function SellerPage() {
 
   return <RequireSeller>
     <>
+    <SellerNotificationPopover />
     <main className="min-h-screen bg-[#f7f5ef] text-[#20342b]">
       <div className="flex min-h-screen">
         <aside className="hidden w-72 shrink-0 flex-col border-r border-[#e4ded2] bg-[#fbfaf7] p-6 lg:flex">

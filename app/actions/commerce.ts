@@ -74,6 +74,7 @@ export async function createCheckoutOrder(address: string, paymentMethod: 'cash_
   const paymentStatus = paymentMethod === 'cash_on_delivery' ? 'cod_pending' : 'unavailable'
   await db.execute(sql`INSERT INTO marketplace_orders (id, "buyerId", subtotal, shipping, total, "shippingAddress", "paymentStatus", "paymentMethod", "orderStatus") VALUES (${orderId}, ${buyerId}, ${subtotal}, 0, ${subtotal}, ${address.trim()}, ${paymentStatus}, ${paymentMethod}, 'pending_payment')`)
   for (const item of available) await db.execute(sql`INSERT INTO marketplace_order_items (id, "orderId", "productId", "sellerId", quantity, "unitPrice") SELECT ${crypto.randomUUID()}, ${orderId}, p.id, p."sellerId", ${item.quantity}, p.price FROM products p WHERE p.id = ${String(item.product_id)} AND p.published = true AND p.availability = 'available'`)
+  await db.execute(sql`INSERT INTO notifications (id, "userId", title, body) SELECT ${crypto.randomUUID()}, p."sellerId", 'New order received', ${'Order ' + orderId.slice(0, 8) + ' was placed for ' + p.name + '.'} FROM products p JOIN cart_items ci ON ci."productId" = p.id JOIN carts c ON c.id = ci."cartId" WHERE c."buyerId" = ${buyerId} AND p.published = true AND p.availability = 'available'`)
   await db.execute(sql`DELETE FROM cart_items WHERE "cartId" IN (SELECT id FROM carts WHERE "buyerId" = ${buyerId})`)
   revalidatePath('/buyer')
   revalidatePath('/buyer/cart')

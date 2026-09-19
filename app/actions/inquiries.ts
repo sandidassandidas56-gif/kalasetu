@@ -16,6 +16,7 @@ export async function createInquiry(input: { sellerId: string; productId?: strin
     return
   }
   await db.execute(sql`INSERT INTO inquiries (id, "buyerId", "sellerId", "productId", subject, message) VALUES (${crypto.randomUUID()}, ${session.user.id}, ${input.sellerId}, ${input.productId ?? null}, ${input.subject.trim()}, ${input.message.trim()})`)
+  await db.execute(sql`INSERT INTO notifications (id, "userId", title, body) VALUES (${crypto.randomUUID()}, ${input.sellerId}, 'New buyer inquiry', ${input.subject.trim() + ': ' + input.message.trim()})`)
   revalidatePath('/buyer/inquiries')
   revalidatePath('/seller/inquiries')
 }
